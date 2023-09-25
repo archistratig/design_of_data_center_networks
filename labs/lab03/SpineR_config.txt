@@ -15,8 +15,6 @@ vdc SpineR id 1
 
 feature isis
 
-username admin password 5 $5$GPBCAC$L8BqAoAen.jvMSaA0yRceitvEWCpK66BstJIQaK7JE6 
- role network-admin
 ip domain-lookup
 copp profile strict
 snmp-server user admin network-admin auth md5 4943E40DA0A2C3BF986D9B973D6EFF9BF4
@@ -173,6 +171,7 @@ interface mgmt0
 
 interface loopback1
   ip address 2.2.2.2/32
+  ip router isis 1
 icam monitor scale
 
 line console

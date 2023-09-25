@@ -15,8 +15,6 @@ vdc SpineL id 1
 
 feature isis
 
-username admin password 5 $5$ACODDO$O4W9etGgb034X.RGJOL3xHiHU1OTeFZvj4HSN.Megz/ 
- role network-admin
 ip domain-lookup
 copp profile strict
 snmp-server user admin network-admin auth md5 4947266B31F96297891C5979648DB1E1E7
@@ -173,6 +171,7 @@ interface mgmt0
 
 interface loopback1
   ip address 1.1.1.1/32
+  ip router isis 1
 icam monitor scale
 
 line console

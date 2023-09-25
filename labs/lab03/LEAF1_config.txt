@@ -15,9 +15,6 @@ vdc LEAF1 id 1
 
 feature isis
 
-no password strength-check
-username admin password 5 $5$CFBPCP$11N4ZiDnHfhTfmoCuWMk7AitM3oKZK6ogB8TeHdTMt8 
- role network-admin
 ip domain-lookup
 copp profile strict
 snmp-server user admin network-admin auth md5 2170B683946DB145F2A5FE60B91D44A0C2
@@ -175,6 +172,7 @@ interface mgmt0
 
 interface loopback1
   ip address 3.3.3.3/32
+  ip router isis 1
 icam monitor scale
 
 line console

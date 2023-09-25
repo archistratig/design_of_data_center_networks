@@ -10,14 +10,11 @@ vdc LEAF3 id 1
   limit-resource port-channel minimum 0 maximum 511
   limit-resource u4route-mem minimum 248 maximum 248
   limit-resource u6route-mem minimum 96 maximum 96
-  limit-resource m4route-mem minimum 58 maximum 58
+  limit-resource m4route-mem minimum 58 maximum 5
   limit-resource m6route-mem minimum 8 maximum 8
 
 feature isis
 
-no password strength-check
-username admin password 5 $5$GPKBMO$wCSNjfQe4ThnnciV3QF8D/cQ5iFbQ/RfKqxVJON6d3. 
- role network-admin
 ip domain-lookup
 copp profile strict
 snmp-server user admin network-admin auth md5 5330068A30FEFE545F91DAD6C737513D0F
@@ -175,6 +172,7 @@ interface mgmt0
 
 interface loopback1
   ip address 5.5.5.5/32
+  ip router isis 1
 icam monitor scale
 
 line console
