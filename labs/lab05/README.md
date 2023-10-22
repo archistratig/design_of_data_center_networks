@@ -34,7 +34,7 @@ SpineR|Ethernet 1/3|10.2.0.4|255.255.255.254|
 Leaf3|Ethernet 1/2|10.2.0.5|255.255.255.254|
 
 
-#### <u>Адреса интерфейсов Loopback 0, используемые в eBGP для Address Family L2VPN EVPN:</u>
+#### <u>Адреса интерфейсов Loopback 1, используемые в eBGP для Address Family L2VPN EVPN:</u>
 
 |Device|Loopback 1|Subnet Mask|
 |:-:|:-:|:-:|
