@@ -1,0 +1,53 @@
+! Command: show running-config
+! device: CE-LAG (vEOS-lab, EOS-4.26.4M)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model ribd
+!
+hostname CE-LAG
+!
+spanning-tree mode mstp
+!
+vlan 10,20
+!
+interface Port-Channel1
+   switchport mode trunk
+!
+interface Ethernet1
+   switchport trunk allowed vlan 10,20
+   switchport mode trunk
+   channel-group 1 mode active
+!
+interface Ethernet2
+   switchport trunk allowed vlan 10,20
+   switchport mode trunk
+   channel-group 1 mode active
+!
+interface Ethernet3
+!
+interface Ethernet4
+!
+interface Ethernet5
+!
+interface Ethernet6
+!
+interface Ethernet7
+!
+interface Ethernet8
+!
+interface Management1
+!
+interface Vlan10
+   ip address 10.10.10.10/24
+!
+interface Vlan20
+   ip address 20.20.20.20/24
+!
+no ip routing
+!
+end

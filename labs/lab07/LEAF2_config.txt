@@ -1,0 +1,118 @@
+! Command: show running-config
+! device: LEAF2 (vEOS-lab, EOS-4.26.4M)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+hostname LEAF2
+!
+spanning-tree mode mstp
+!
+vlan 10,20
+!
+vrf instance PROD
+!
+interface Ethernet1
+   no switchport
+   ip address 11.0.0.3/31
+   isis enable Underlay
+   isis bfd
+!
+interface Ethernet2
+   no switchport
+   ip address 11.1.0.3/31
+   isis enable Underlay
+   isis bfd
+!
+interface Ethernet3
+!
+interface Ethernet4
+   switchport access vlan 10
+!
+interface Ethernet5
+!
+interface Ethernet6
+!
+interface Ethernet7
+!
+interface Ethernet8
+!
+interface Loopback1
+   ip address 9.9.9.9/32
+   isis enable Underlay
+!
+interface Loopback200
+   ip address 200.200.200.4/32
+   isis enable Underlay
+!
+interface Management1
+!
+interface Vlan10
+   vrf PROD
+   ip address virtual 10.10.10.254/24
+!
+interface Vlan20
+   vrf PROD
+   ip address virtual 20.20.20.254/24
+!
+interface Vxlan1
+   vxlan source-interface Loopback200
+   vxlan udp-port 4789
+   vxlan vlan 10 vni 0.39.26
+   vxlan vlan 20 vni 0.39.36
+   vxlan vrf PROD vni 0.39.115
+!
+ip virtual-router mac-address 00:aa:aa:aa:aa:aa
+!
+ip routing
+ip routing vrf PROD
+!
+router bgp 65102
+   router-id 9.9.9.9
+   timers bgp 3 9
+   maximum-paths 8 ecmp 16
+   neighbor evpn peer group
+   neighbor evpn remote-as 65502
+   neighbor evpn update-source Loopback1
+   neighbor evpn bfd
+   neighbor evpn ebgp-multihop 5
+   neighbor evpn send-community extended
+   neighbor evpn maximum-routes 120 warning-only
+   neighbor 6.6.6.6 peer group evpn
+   neighbor 7.7.7.7 peer group evpn
+   !
+   vlan 10
+      rd 9.9.9.9:10010
+      route-target both 10010:10010
+      redistribute learned
+   !
+   vlan 20
+      rd 9.9.9.9:10020
+      route-target both 10020:10020
+      redistribute learned
+   !
+   address-family evpn
+      neighbor evpn activate
+   !
+   address-family ipv4
+      no neighbor evpn activate
+   !
+   vrf PROD
+      rd 9.9.9.9:10099
+      route-target import evpn 65101:10099
+      route-target export evpn 65101:10099
+      redistribute connected
+!
+router isis Underlay
+   net 49.0009.0090.9009.00
+   !
+   address-family ipv4 unicast
+!
+vxlan vni notation dotted
+!
+end

@@ -1,0 +1,90 @@
+! Command: show running-config
+! device: SpineR (vEOS-lab, EOS-4.26.4M)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+hostname SpineR
+!
+spanning-tree mode mstp
+!
+interface Ethernet1
+   no switchport
+   ip address 11.1.0.0/31
+   isis enable Underlay
+   isis bfd
+!
+interface Ethernet2
+   no switchport
+   ip address 11.1.0.2/31
+   isis enable Underlay
+   isis bfd
+!
+interface Ethernet3
+   no switchport
+   ip address 11.1.0.4/31
+   isis enable Underlay
+   isis bfd
+!
+interface Ethernet4
+   no switchport
+   ip address 11.1.0.6/31
+   isis enable Underlay
+   isis bfd
+!
+interface Ethernet5
+!
+interface Ethernet6
+!
+interface Ethernet7
+!
+interface Ethernet8
+!
+interface Loopback1
+   ip address 7.7.7.7/32
+   isis enable Underlay
+!
+interface Loopback200
+   ip address 200.200.200.2/32
+   isis enable Underlay
+!
+interface Management1
+!
+ip routing
+!
+router bgp 65502
+   router-id 7.7.7.7
+   timers bgp 3 9
+   neighbor evpn peer group
+   neighbor evpn next-hop-unchanged
+   neighbor evpn update-source Loopback1
+   neighbor evpn bfd
+   neighbor evpn ebgp-multihop 5
+   neighbor evpn send-community extended
+   neighbor evpn maximum-routes 120 warning-only
+   neighbor 8.8.8.8 peer group evpn
+   neighbor 8.8.8.8 remote-as 65101
+   neighbor 9.9.9.9 peer group evpn
+   neighbor 9.9.9.9 remote-as 65102
+   neighbor 10.10.10.10 peer group evpn
+   neighbor 10.10.10.10 remote-as 65103
+   neighbor 11.11.11.11 peer group evpn
+   neighbor 11.11.11.11 remote-as 65103
+   !
+   address-family evpn
+      neighbor evpn activate
+   !
+   address-family ipv4
+      no neighbor evpn activate
+!
+router isis Underlay
+   net 49.0007.0070.7007.00
+   !
+   address-family ipv4 unicast
+!
+end

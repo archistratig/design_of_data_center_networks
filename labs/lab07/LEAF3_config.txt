@@ -1,0 +1,181 @@
+! Command: show running-config
+! device: LEAF3 (vEOS-lab, EOS-4.26.4M)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+hostname LEAF3
+!
+spanning-tree mode mstp
+no spanning-tree vlan-id 1000
+!
+vlan 10,20
+!
+vlan 1000
+   trunk group peer-link
+!
+vrf instance PROD
+!
+vrf instance heartbeat
+!
+interface Port-Channel1
+   shutdown
+   switchport trunk allowed vlan 10,20
+   switchport mode trunk
+   !
+   evpn ethernet-segment
+      identifier 0000:1111:2222:3333:4444
+      route-target import 12:23:34:45:56:67
+   lacp system-id 1111.2222.9999
+   spanning-tree portfast
+!
+interface Port-Channel2
+   description mlag-link
+   switchport mode trunk
+   mlag 2
+!
+interface Port-Channel3
+   switchport trunk allowed vlan 10,20
+   switchport mode trunk
+!
+interface Port-Channel1000
+   switchport mode trunk
+   switchport trunk group peer-link
+!
+interface Ethernet1
+   no switchport
+   ip address 11.0.0.5/31
+   isis enable Underlay
+   isis bfd
+!
+interface Ethernet2
+   no switchport
+   ip address 11.1.0.5/31
+   isis enable Underlay
+   isis bfd
+!
+interface Ethernet3
+!
+interface Ethernet4
+   switchport access vlan 20
+!
+interface Ethernet5
+   channel-group 1000 mode active
+!
+interface Ethernet6
+   channel-group 1000 mode active
+!
+interface Ethernet7
+   no switchport
+   vrf heartbeat
+   ip address 110.100.200.0/31
+   isis enable Underlay
+!
+interface Ethernet8
+   switchport trunk allowed vlan 10,20
+   switchport mode trunk
+   channel-group 2 mode active
+   spanning-tree portfast
+!
+interface Loopback1
+   ip address 10.10.10.10/32
+   isis enable Underlay
+!
+interface Loopback200
+   ip address 200.200.200.5/32
+   isis enable Underlay
+!
+interface Management1
+!
+interface Vlan10
+   vrf PROD
+   ip address virtual 10.10.10.254/24
+!
+interface Vlan20
+   vrf PROD
+   ip address virtual 20.20.20.254/24
+!
+interface Vlan1000
+   no autostate
+   ip address 110.100.100.1/30
+   isis enable Underlay
+!
+interface Vxlan1
+   vxlan source-interface Loopback200
+   vxlan udp-port 4789
+   vxlan vlan 10 vni 0.39.26
+   vxlan vlan 20 vni 0.39.36
+   vxlan vrf PROD vni 0.39.115
+!
+event-handler evpn-blacklist-recovery
+   action bash FastCli -p 15 clear bgp evpn host-flap-c
+   delay 300
+   !
+   trigger on-logging
+      regex EVPN-3-BLACKLISTED_DUPLICATE_MAC
+!
+ip virtual-router mac-address 00:aa:aa:aa:aa:aa
+!
+ip routing
+ip routing vrf PROD
+ip routing vrf heartbeat
+!
+mlag configuration
+   domain-id CE
+   local-interface Vlan1000
+   peer-address 110.100.100.2
+   peer-address heartbeat 110.100.200.1 vrf heartbeat
+   peer-link Port-Channel1000
+   dual-primary detection delay 10 action errdisable all-interfaces
+   reload-delay mlag 60
+   reload-delay non-mlag 30
+!
+router bgp 65103
+   router-id 10.10.10.10
+   timers bgp 3 9
+   maximum-paths 8 ecmp 16
+   neighbor evpn peer group
+   neighbor evpn remote-as 65502
+   neighbor evpn update-source Loopback1
+   neighbor evpn bfd
+   neighbor evpn ebgp-multihop 5
+   neighbor evpn send-community extended
+   neighbor evpn maximum-routes 120 warning-only
+   neighbor 6.6.6.6 peer group evpn
+   neighbor 7.7.7.7 peer group evpn
+   !
+   vlan 10
+      rd 10.10.10.10:10010
+      route-target both 10010:10010
+      redistribute learned
+   !
+   vlan 20
+      rd 10.10.10.10:10020
+      route-target both 10020:10020
+      redistribute learned
+   !
+   address-family evpn
+      neighbor evpn activate
+   !
+   address-family ipv4
+      no neighbor evpn activate
+   !
+   vrf PROD
+      rd 10.10.10.10:10099
+      route-target import evpn 65101:10099
+      route-target export evpn 65101:10099
+      redistribute connected
+!
+router isis Underlay
+   net 49.0010.0100.1001.0010.00
+   !
+   address-family ipv4 unicast
+!
+vxlan vni notation dotted
+!
+end
