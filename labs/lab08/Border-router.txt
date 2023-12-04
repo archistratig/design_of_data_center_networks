@@ -1,0 +1,148 @@
+Building configuration...
+
+Current configuration : 1637 bytes
+!
+version 15.7
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname Border_Router
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!         
+!
+!
+!
+!
+no ip icmp rate-limit unreachable
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+
+
+!
+!
+!
+!
+no ip domain lookup
+ip cef    
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+redundancy
+!
+no cdp log mismatch duplex
+!
+ip tcp synwait-time 5
+! 
+!
+!
+!
+!         
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ ip address 10.110.2.1 255.255.255.255
+!
+interface Loopback1
+ ip address 10.110.2.10 255.255.255.255
+!
+interface Ethernet0/0
+ ip address 10.110.254.251 255.255.255.254
+ duplex auto
+!
+interface Ethernet0/1
+ ip address 10.110.254.253 255.255.255.254
+ duplex auto
+!
+interface Ethernet0/2
+ no ip address
+ shutdown
+ duplex auto
+!
+interface Ethernet0/3
+ no ip address
+ shutdown
+ duplex auto
+!
+router bgp 65500
+ bgp log-neighbor-changes
+ neighbor 10.110.254.250 remote-as 4200000001
+ neighbor 10.110.254.252 remote-as 4200000001
+ !
+ address-family ipv4
+  network 10.110.2.1 mask 255.255.255.255
+  aggregate-address 10.110.2.0 255.255.255.0 as-set summary-only
+  neighbor 10.110.254.250 activate
+  neighbor 10.110.254.252 activate
+ exit-address-family
+!
+ip forward-protocol nd
+!         
+!
+no ip http server
+no ip http secure-server
+!
+ipv6 ioam timestamp
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+!
+!
+!
+line con 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+line aux 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+line vty 0 4
+ login
+ transport input none
+!
+!
+end

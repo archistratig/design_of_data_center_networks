@@ -1,0 +1,100 @@
+! Command: show running-config
+! device: DC1-SpineL (vEOS-lab, EOS-4.29.2F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+hostname DC1-SpineL
+!
+spanning-tree mode mstp
+!
+interface Ethernet1
+   mtu 9120
+   no switchport
+   ip address 10.3.255.0/31
+   ip ospf network point-to-point
+   ip ospf area 0.0.0.0
+!
+interface Ethernet2
+   mtu 9120
+   no switchport
+   ip address 10.3.255.2/31
+   ip ospf network point-to-point
+   ip ospf area 0.0.0.0
+!
+interface Ethernet3
+   mtu 9120
+   no switchport
+   ip address 10.3.255.4/31
+   ip ospf network point-to-point
+   ip ospf area 0.0.0.0
+!
+interface Ethernet4
+   mtu 9120
+   no switchport
+   ip address 10.3.255.121/31
+   ip ospf network point-to-point
+   ip ospf area 0.0.0.0
+!
+interface Ethernet5
+   mtu 9120
+   no switchport
+   ip address 10.3.255.133/31
+   ip ospf network point-to-point
+   ip ospf area 0.0.0.0
+!
+interface Ethernet6
+!
+interface Ethernet7
+!
+interface Ethernet8
+!
+interface Ethernet9
+!
+interface Loopback0
+   ip address 10.3.253.1/32
+   ip ospf area 0.0.0.0
+!
+interface Management1
+!
+ip routing
+!
+router bgp 4200000001
+   router-id 10.3.253.1
+   timers bgp 3 9
+   maximum-paths 8 ecmp 16
+   neighbor evpn_leaf peer group
+   neighbor evpn_leaf remote-as 4200000001
+   neighbor evpn_leaf bfd
+   neighbor evpn_leaf route-reflector-client
+   neighbor evpn_leaf send-community
+   neighbor 10.3.253.3 peer group evpn_leaf
+   neighbor 10.3.253.4 peer group evpn_leaf
+   neighbor 10.3.253.5 peer group evpn_leaf
+   neighbor 10.3.253.6 peer group evpn_leaf
+   neighbor 10.3.253.7 peer group evpn_leaf
+   !
+   address-family evpn
+      bgp next-hop-unchanged
+      neighbor evpn_leaf activate
+      no graceful-restart
+   !
+   address-family ipv4
+      no neighbor evpn_leaf activate
+!
+router ospf 1
+   router-id 10.3.253.1
+   passive-interface default
+   no passive-interface Ethernet1
+   no passive-interface Ethernet2
+   no passive-interface Ethernet3
+   no passive-interface Ethernet4
+   no passive-interface Ethernet5
+   max-lsa 12000
+!
+end

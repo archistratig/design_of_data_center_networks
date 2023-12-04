@@ -1,0 +1,187 @@
+! Command: show running-config
+! device: DC1-LEAF2 (vEOS-lab, EOS-4.29.2F)
+!
+! boot system flash:/vEOS-lab.swi
+!
+no aaa root
+!
+transceiver qsfp default-mode 4x10G
+!
+service routing protocols model multi-agent
+!
+hostname DC1-LEAF2
+!
+spanning-tree mode mstp
+no spanning-tree vlan-id 4093
+!
+vlan 10-11,20,30
+!
+vlan 4093
+   trunk group PEER-LINK
+!
+vrf instance NET
+!
+vrf instance mlag-keep-alive
+!
+interface Port-Channel1
+   description MLag-link
+   switchport mode trunk
+   mlag 1
+!
+interface Port-Channel1000
+   description Mlag-Peer
+   switchport mode trunk
+   switchport trunk group PEER-LINK
+!
+interface Ethernet1
+   mtu 9120
+   no switchport
+   ip address 10.3.255.3/31
+   ip ospf network point-to-point
+   ip ospf area 0.0.0.0
+!
+interface Ethernet2
+   mtu 9120
+   no switchport
+   ip address 10.3.255.17/31
+   ip ospf network point-to-point
+   ip ospf area 0.0.0.0
+!
+interface Ethernet3
+!
+interface Ethernet4
+!
+interface Ethernet5
+   switchport trunk allowed vlan 10-11,20,30
+   switchport mode trunk
+   channel-group 1 mode active
+   spanning-tree portfast
+!
+interface Ethernet6
+   no switchport
+   vrf mlag-keep-alive
+   ip address 10.3.255.200/31
+!
+interface Ethernet7
+   description POD1-L1-POD1-L2-MLag
+   channel-group 1000 mode active
+!
+interface Ethernet8
+   description POD1-L1-POD1-L2-MLag
+   channel-group 1000 mode active
+!
+interface Loopback0
+   ip address 10.3.253.4/32
+   ip ospf area 0.0.0.0
+!
+interface Loopback1
+   description Vxlan-source
+   ip address 10.3.255.181/32
+   ip ospf area 0.0.0.0
+!
+interface Management1
+!
+interface Vlan10
+   vrf NET
+   ip address virtual 10.3.10.254/24
+!
+interface Vlan11
+   vrf NET
+   ip address virtual 10.3.11.254/24
+!
+interface Vlan20
+   vrf NET
+   ip address virtual 10.3.20.254/24
+!
+interface Vlan30
+   vrf NET
+   ip address virtual 10.3.30.254/24
+!
+interface Vlan4093
+   no autostate
+   ip address 10.3.255.253/31
+   ip ospf area 0.0.0.0
+!
+interface Vxlan1
+   vxlan source-interface Loopback1
+   vxlan udp-port 4789
+   vxlan vlan 10 vni 0.39.26
+   vxlan vlan 11 vni 0.39.27
+   vxlan vlan 20 vni 0.39.36
+   vxlan vlan 30 vni 0.39.46
+   vxlan vrf NET vni 0.117.47
+   vxlan learn-restrict any
+!
+event-handler evpn-blacklist-recovery
+   action bash FastCli -p 15 clear bgp evpn host-flap-c
+   delay 300
+   !
+   trigger on-logging
+      regex EVPN-3-BLACKLISTED_DUPLICATE_MAC
+!
+ip virtual-router mac-address 00:a1:a1:a1:a1:a1
+!
+ip routing
+ip routing vrf NET
+ip routing vrf mlag-keep-alive
+!
+mlag configuration
+   domain-id POD1-leafs
+   local-interface Vlan4093
+   peer-address 10.3.255.252
+   peer-address heartbeat 10.3.255.201 vrf mlag-keep-alive
+   peer-link Port-Channel1000
+   dual-primary detection delay 10 action errdisable all-interfaces
+   reload-delay mlag 60
+   reload-delay non-mlag 30
+!
+router bgp 4200000001
+   router-id 10.3.253.4
+   timers bgp 3 9
+   maximum-paths 8 ecmp 16
+   neighbor evpn_spine peer group
+   neighbor evpn_spine remote-as 4200000001
+   neighbor evpn_spine update-source Loopback0
+   neighbor evpn_spine bfd
+   neighbor evpn_spine send-community extended
+   neighbor 10.3.253.1 peer group evpn_spine
+   neighbor 10.3.253.2 peer group evpn_spine
+   !
+   vlan 10
+      rd 10.3.253.4:10010
+      route-target both 4200000001:10010
+      redistribute learned
+   !
+   vlan 11
+      rd 10.3.253.3:10011
+      route-target both 10011:10011
+      route-target both 4200000001:10011
+      redistribute learned
+   !
+   vlan 20
+      rd 10.3.253.4:10011
+      route-target both 10020:10020
+      route-target both 4200000001:10020
+      redistribute learned
+   !
+   address-family evpn
+      bgp next-hop-unchanged
+      neighbor evpn_spine activate
+      no graceful-restart
+   !
+   address-family ipv4
+      no neighbor evpn_spine activate
+   !
+   vrf NET
+      rd 10.3.253.4:29999
+      route-target import evpn 4200000001:29999
+      route-target export evpn 4200000001:29999
+      redistribute connected
+!
+router ospf 1
+   router-id 10.3.253.4
+   max-lsa 12000
+!
+vxlan vni notation dotted
+!
+end
