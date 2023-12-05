@@ -24,9 +24,9 @@
 |Device|Interface|IP Address|Subnet Mask|VRF|
 |:-:|:-:|:-:|:-:|:-:|
 |Edge-LEAF1|Ethernet 3|10.110.254.250|255.255.255.254|PROD|
-|Edge-LEAF2|Ethernet 3|10.110.254.254|255.255.255.254|PROD|
-|Border-router|Ethernet 1|10.110.254.251|255.255.255.254|-|
-|Border-router|Ethernet 1|10.110.254.253|255.255.255.254|-|
+|Edge-LEAF2|Ethernet 3|10.110.254.252|255.255.255.254|PROD|
+|Border-router|Ethernet 0/0|10.110.254.251|255.255.255.254|-|
+|Border-router|Ethernet 0/1|10.110.254.253|255.255.255.254|-|
 |Border-router|Loopback 0|10.110.2.1|255.255.255.255|-|
 |Border-router|Loopback 1|10.110.2.10|255.255.255.255|-|
 
@@ -34,8 +34,8 @@
 |Device|Route|
 |:-:|:-:|
 |Border-router|10.110.2.0/24|
-|Edge-LEAF1|172.16.0.0/22|
-|Edge-LEAF2|172.16.0.0/22|
+|Edge-LEAF1|10.3.0.0/16|
+|Edge-LEAF2|10.3.0.0/16|
 
 
 ### Необходимые настройки на оборудовании:
@@ -74,7 +74,6 @@ router bgp 4200000001
       route-target export evpn 4200000001:29999
       neighbor 10.110.254.251 remote-as 65500
       network 10.3.253.6/32
-      network 10.3.254.254/32
       aggregate-address 10.3.0.0/16 as-set summary-only
       redistribute connected
 
